@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="c919_ground">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="244.818193963098 -201.950825983124 -9.92038677043845"
+        rpy="0 0 0" />
+      <mass
+        value="2787900.20163747" />
+      <inertia
+        ixx="5.05846400035279E+17"
+        ixy="1.35910376936878E+16"
+        ixz="8973888817336.59"
+        iyy="2.05769607716676E+17"
+        iyz="-6213263259013.84"
+        izz="7.11595136875113E+17" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://c919_ground/meshes/air_ground.stl" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://c919_ground/meshes/air_ground.stl" />
+      </geometry>
+    </collision>
+  </link>
+</robot>

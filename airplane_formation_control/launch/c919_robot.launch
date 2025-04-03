@@ -1,0 +1,103 @@
+<?xml version="1.0"?>
+<launch>
+<!-- tracked:旋转雷达  tracked_mapping:固定双雷达 -->
+  <arg name="robot_type" default="tracked"/>
+
+  <arg name="rviz" default="true"/>
+
+  <arg name="ns0" default="robot0"/>
+  <arg name="ns1" default="robot1"/>
+  <arg name="ns2" default="robot2"/>
+
+  <!-- 有飞机的机场地图 -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="/home/shenlu/ubuntu/consensus_control_ws/src/airplane_formation_control/worlds/airport_with_c919.world"/>
+  </include>
+
+  <!-- 去除飞机的机场地图 -->
+  <!-- <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="/home/shenlu/ubuntu/consensus_control_ws/src/airplane_formation_control/worlds/airport_empty.world"/>
+  </include> -->
+
+  <!-- 启动rqt运动控制插件 -->
+  <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" respawn="false" output="screen" > 
+  </node>
+
+  <!-- 小车1 -->
+  <group ns ="$(arg ns0)">
+    <include file="$(find airplane_formation_control)/launch/spawn_c919_robot.launch">
+      <arg name="x" value="-60.0"/>
+      <arg name="y" value="-60.0"/>
+      <arg name="z" value="0.0"/>
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns0)"/>
+    </include>
+
+      <include file="$(find airplane_formation_control)/launch/control_$(arg robot_type).launch">
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns0)"/>
+    </include>
+
+
+    <!-- 设置一个全局坐标系map，这是rviz中显示多机器人的关键，将map坐标系作为机器人的odom坐标系的父亲，使得三个机器人能正常在rviz中显示 -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="0 0 0 0 0 0 /map /robot0/odom" />
+  </group>
+  
+  <!-- 小车2 -->
+  <group ns ="$(arg ns1)">
+    <include file="$(find airplane_formation_control)/launch/spawn_c919_robot.launch">
+    <arg name="x" value="-80.0"/>
+    <arg name="y" value="-50.0"/>
+    <arg name="z" value="0.0"/>
+    <arg name="robot_type" value="$(arg robot_type)"/>
+    <arg name="robot_name" value="$(arg ns1)"/>
+    </include>
+
+    <include file="$(find airplane_formation_control)/launch/control_$(arg robot_type).launch">
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns1)"/>
+    </include>
+
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="0 0 0 0 0 0 /map /robot1/odom" />
+  </group>
+
+  <!-- 小车3 -->
+ <group ns ="$(arg ns2)">
+    <include file="$(find airplane_formation_control)/launch/spawn_c919_robot.launch">
+    <arg name="x" value="-60.0"/>
+    <arg name="y" value="-40.0"/>
+    <arg name="z" value="0.0"/>
+    <arg name="robot_type" value="$(arg robot_type)"/>
+    <arg name="robot_name" value="$(arg ns2)"/>
+    </include>
+
+    <include file="$(find airplane_formation_control)/launch/control_$(arg robot_type).launch">
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns2)"/>
+    </include>
+
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="0 0 0 0 0 0 /map /robot2/odom" />
+  </group>
+
+ 
+    
+<!-- 启动rviz -->
+<node if="$(arg rviz)" pkg="rviz" type="rviz" name="$(anon rviz)" respawn="false" output="screen" args="-d $(find airplane_formation_control)/rviz/airport_robot.rviz" />
+
+
+<!-- 保存点云数据 -->
+<!-- <node pkg="airplane_formation_control" type="point_cloud_saver" name="point_cloud_saver" />  -->
+
+<!-- 保存10张点云图 -->
+<!-- <node pkg="airplane_formation_control" type="point_cloud_saver_10" name="point_cloud_saver_10" output="screen"/>  -->
+
+<!-- 旋转激光雷达 -->
+<!-- <node pkg="airplane_formation_control" type="imu2lidar" name="imu2lidar" output="screen"/> -->
+
+<!-- 双激光雷达融合点云 -->
+<!-- <node pkg="airplane_formation_control" type="lidar_message_filters" name="lidar_message_filters" output="screen"/> -->
+
+
+</launch>

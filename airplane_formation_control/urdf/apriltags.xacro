@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="textured_cube_robot">
+
+  <!-- 参数定义 -->
+  <xacro:property name="cube_size" value="1.0"/> <!-- 立方体尺寸 (边长 1m) -->
+  <xacro:property name="texture_image" value="package://your_package_name/textures/texture_image.png"/> <!-- 纹理图片路径 -->
+
+
+  <link name="odom">
+  </link>
+  <joint name="odom" type="fixed">
+      <parent link="odom"/>
+      <child link="base_footprint"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="base_footprint">
+  </link>
+  <joint name="base_joint" type="fixed">
+      <parent link="base_footprint"/>
+      <child link="base_link"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- 立方体链接 -->
+  <link name="base_link">
+    <!-- 惯性参数 -->
+    <inertial>
+      <mass value="1.0"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>
+    </inertial>
+
+    <!-- 碰撞 -->
+    <collision>
+      <geometry>
+        <box size="${cube_size} ${cube_size} ${cube_size}"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </collision>
+
+    <!-- 可视化 -->
+    <visual>
+      <geometry>
+        <box size="${cube_size} ${cube_size} ${cube_size}"/>
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <!-- <material name = "qrcode">
+        <texture filename="package://airplane_formation_control/config/tag36h11_0.png"/>
+      </material> -->
+      <material name="yellow">
+        <color rgba="0.5 0.3 0.0 0.5" />
+      </material>
+    </visual>
+  </link>
+  <gazebo reference="base_link"> 
+    <material>Gazebo/Yellow</material>
+    <!-- <material>Gazebo/cube_qrcode</material> -->
+  </gazebo>
+</robot>

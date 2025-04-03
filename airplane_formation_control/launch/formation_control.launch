@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<launch>
+
+<!-- **********************小车部分******************** -->
+
+<!-- tracked:旋转雷达  tracked_mapping:固定双雷达 -->
+  <arg name="robot_type" default="tracked"/>
+  <arg name="airplane_type" default="tracked"/>
+  <arg name="rviz" default="true"/>
+  <!-- 小车中心到头部的距离base_length -->
+  <arg name="front_distance" default = "0.3" />
+
+  <arg name="ns0" default="robot0"/>
+  <arg name="ns1" default="robot1"/>
+  <arg name="ns2" default="robot2"/>
+  <arg name="ns3" default="airplane"/>
+
+  <!-- 加载gazebo地图 -->
+  <!-- 去除飞机的机场地图 -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="/home/shenlu/ubuntu/consensus_control_ws/src/airplane_formation_control/worlds/airport_rl.world"/>
+  </include>
+
+  <!-- 启动rqt运动控制插件 -->
+  <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" respawn="false" output="screen" > 
+  </node>
+
+  <!-- 小车1 -->
+  <group ns ="$(arg ns0)">
+    <include file="$(find airplane_formation_control)/launch/spawn_c919_robot.launch">
+      <arg name="x" value="-60.0"/>
+      <arg name="y" value="-60.0"/>
+      <arg name="z" value="0.0"/>
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns0)"/>
+    </include>
+
+      <include file="$(find airplane_formation_control)/launch/control_$(arg robot_type).launch">
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns0)"/>
+    </include>
+
+
+    <!-- 设置一个全局坐标系map，这是rviz中显示多机器人的关键，将map坐标系作为机器人的odom坐标系的父亲，使得三个机器人能正常在rviz中显示 -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-60 -60 0 0 0 0 /map /robot0/odom" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="robot0_front" args="$(arg front_distance) 0 0 0 0 0 /robot0/base_link /robot0/front" />
+  </group>
+  
+  <!-- 小车2 -->
+  <group ns ="$(arg ns1)">
+    <include file="$(find airplane_formation_control)/launch/spawn_c919_robot.launch">
+    <arg name="x" value="-20.0"/>
+    <arg name="y" value="-100.0"/>
+    <arg name="z" value="0.0"/>
+    <arg name="robot_type" value="$(arg robot_type)"/>
+    <arg name="robot_name" value="$(arg ns1)"/>
+    </include>
+
+    <include file="$(find airplane_formation_control)/launch/control_$(arg robot_type).launch">
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns1)"/>
+    </include>
+
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="0 0 0 0 0 0 /map /robot1/odom" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="robot1_front" args="$(arg front_distance) 0 0 0 0 0 /robot1/base_link /robot1/front" />
+  </group>
+
+  <!-- 小车3 -->
+  <group ns ="$(arg ns2)">
+    <include file="$(find airplane_formation_control)/launch/spawn_c919_robot.launch">
+    <arg name="x" value="-100.0"/>
+    <arg name="y" value="-100.0"/>
+    <arg name="z" value="0.0"/>
+    <arg name="robot_type" value="$(arg robot_type)"/>
+    <arg name="robot_name" value="$(arg ns2)"/>
+    </include>
+
+    <include file="$(find airplane_formation_control)/launch/control_$(arg robot_type).launch">
+      <arg name="robot_type" value="$(arg robot_type)"/>
+      <arg name="robot_name" value="$(arg ns2)"/>
+    </include>
+
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="0 0 0 0 0 0 /map /robot2/odom" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="robot2_front" args="$(arg front_distance) 0 0 0 0 0 /robot2/base_link /robot2/front" />
+  </group>
+
+  <!-- 飞机 -->
+  <group ns = "$(arg ns3)">
+    <include file="$(find airplane_formation_control)/launch/spawn_airplane.launch">
+        <arg name="x" value="-60.0"/>
+        <arg name="y" value="-100.0"/>
+        <arg name="z" value="0.0"/>
+        <arg name="airplane_type" value="$(arg airplane_type)"/>
+        <arg name="airplane_name" value="$(arg ns3)"/>
+    </include>
+
+    <include file="$(find airplane_formation_control)/launch/control_airplane.launch">
+        <arg name="airplane_type" value="$(arg airplane_type)"/>
+        <arg name="airplane_name" value="$(arg ns3)"/>
+    </include>
+
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-60 -100 0 0 0 0 /map /airplane/UGV/odom" />
+
+  </group>
+  
+
+ 
+    
+<!-- 启动rviz -->
+<node if="$(arg rviz)" pkg="rviz" type="rviz" name="$(anon rviz)" respawn="false" output="screen" args="-d $(find airplane_formation_control)/rviz/airport_robot.rviz" />
+
+
+
+<!-- 旋转激光雷达 -->
+<!-- <node pkg="airplane_formation_control" type="imu2lidar" name="robot0_imu2lidar" output="screen">
+  <param name="~robot_name" value="robot0" />
+</node>
+
+<node pkg="airplane_formation_control" type="imu2lidar" name="robot1_imu2lidar" output="screen">
+  <param name="~robot_name" value="robot1" />
+</node>
+
+<node pkg="airplane_formation_control" type="imu2lidar" name="robot2_imu2lidar" output="screen">
+  <param name="~robot_name" value="robot2" />
+</node> -->
+
+
+<!-- DLIO -->
+<!-- <include file="$(find direct_lidar_inertial_odometry)/launch/formation_dlio.launch">
+  <arg name="rviz" value="false"/>
+  <arg name="pointcloud_topic" value="/robot0/points_raw"/>
+  <arg name="imu_topic" value="/robot0/processed_imu"/>
+  <arg name="robot_id" value="0"/>
+</include> -->
+
+<!-- <include file="$(find direct_lidar_inertial_odometry)/launch/formation_dlio.launch">
+  <arg name="rviz" value="false"/>
+  <arg name="pointcloud_topic" value="/robot1/points_raw"/>
+  <arg name="imu_topic" value="/robot1/processed_imu"/>
+  <arg name="robot_id" value="1"/>
+</include> -->
+
+<!-- <include file="$(find direct_lidar_inertial_odometry)/launch/formation_dlio.launch">
+  <arg name="rviz" value="false"/>
+  <arg name="pointcloud_topic" value="/robot2/points_raw"/>
+  <arg name="imu_topic" value="/robot2/processed_imu"/>
+  <arg name="robot_id" value="2"/>
+</include> -->
+
+
+
+<!-- 编队控制 -->
+<node pkg="airplane_formation_control" type="leader_follower" name="robot0_follower"  output="screen">
+  <param name="~leader_robot_name" value="airplane" />
+  <param name="~follower_robot_name" value="robot0" />
+  <param name="~expected_distance" value="40.0" />
+  <param name="~expected_theta" value="0" />
+  <param name="~front_distance" value="$(arg front_distance)" />
+</node>
+
+<node pkg="airplane_formation_control" type="leader_follower" name="robot1_follower"  output="screen">
+  <param name="~leader_robot_name" value="airplane" />
+  <param name="~follower_robot_name" value="robot1" />
+  <param name="~expected_distance" value="40.0" />
+  <param name="~expected_theta" value="-1.57" />
+  <param name="~front_distance" value="$(arg front_distance)" />
+</node>
+
+<node pkg="airplane_formation_control" type="leader_follower" name="robot2_follower"  output="screen">
+  <param name="~leader_robot_name" value="airplane" />
+  <param name="~follower_robot_name" value="robot2" />
+  <param name="~expected_distance" value="40.0" />
+  <param name="~expected_theta" value="1.57" />
+  <param name="~front_distance" value="$(arg front_distance)" />
+</node>
+
+<!-- 保存点云数据 -->
+<!-- <node pkg="airplane_formation_control" type="point_cloud_saver" name="point_cloud_saver" />  -->
+
+<!-- 保存10张点云图 -->
+<!-- <node pkg="airplane_formation_control" type="point_cloud_saver_10" name="point_cloud_saver_10" output="screen"/>  -->
+
+
+
+<!-- 双激光雷达融合点云 -->
+<!-- <node pkg="airplane_formation_control" type="lidar_message_filters" name="lidar_message_filters" output="screen"/> -->
+
+
+</launch>

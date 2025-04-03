@@ -1,0 +1,26 @@
+<launch>
+
+
+  <arg name="cmd_vel_topic" default="/robot0/airport_robot/cmd_vel" />
+  <arg name="odom_topic" default="/robot0/odom" />
+
+  <!-- <param name="/use_sim_time" value="true" /> -->
+  
+  <node name="map_server" pkg="map_server" type="map_server" args="$(find airplane_formation_control)/map/mymap.yaml"/>
+  
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base"  output="screen">
+    <param name="controller_frequency" value="2.5"/> 
+    <param name="controller_patiente" value="2.5"/>
+    <rosparam file="$(find airplane_formation_control)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find airplane_formation_control)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find airplane_formation_control)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find airplane_formation_control)/config/global_costmap_params.yaml" command="load" />
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/> 
+    <param name="planner_frequency" value="1.0" />
+    <param name="planner_patience" value="5.0" />
+    <remap from="cmd_vel" to="$(arg cmd_vel_topic)"/>
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
+    <rosparam file="$(find airplane_formation_control)/config/teb_local_planner_params.yaml" command="load" />
+  </node>
+</launch>

@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<launch>
+
+
+
+  <arg name="rviz" default="true"/>
+
+
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find airplane_formation_control)/worlds/airport_with_c919.world"/>
+  </include>
+
+ 
+  <include file="$(find airplane_formation_control)/launch/spawn_airplane.launch">
+    <arg name="x" value="-150.0"/>
+    <arg name="y" value="-150.0"/>
+    <arg name="z" value="0.8"/>
+  </include>
+
+  <include file="$(find airplane_formation_control)/launch/control_airplane.launch">
+  </include>
+
+
+ 
+    
+
+  <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering_airplane" respawn="false" output="screen" > 
+  </node>
+</launch>

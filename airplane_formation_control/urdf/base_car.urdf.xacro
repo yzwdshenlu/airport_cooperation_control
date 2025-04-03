@@ -1,0 +1,396 @@
+<?xml version="1.0"?>
+
+<robot name="airport_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:property name="robot_name" value="$(arg robot_name)"/>
+    <xacro:property name="lasers_horizon" value="16"/>
+    <link name="odom">
+    </link>
+    <joint name="odom" type="fixed">
+        <parent link="odom"/>
+        <child link="base_footprint"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+    </joint>
+    <link name="base_footprint"/>
+    <link name="base_link">
+        <inertial>
+            <mass value="1.69655"/>
+            <origin rpy="0 0 0 " xyz="0 0 0"/>
+            <inertia ixx="1.387114121" ixy="0" ixz="0" iyy="1.566123162" iyz="0" izz="0.343148801"/>
+        </inertial>
+
+        <collision>
+            <!--<pose>0 0 0 0 0 1.57</pose>>-->
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <!--<pose>0 0 0 0 0 1.57</pose>>-->
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <material name="base_link">
+                <color rgba="0.0 0.0 0.8 1" />
+            </material>
+        </visual>
+    </link>
+
+    <joint name="base_joint" type="fixed">
+        <origin xyz="0 0 -0.0288" rpy="0 0 0" />
+        <parent link="base_footprint"/>
+        <child link="base_link" />
+    </joint>
+
+
+    <!--velodyne-->
+    <xacro:arg name="gpu" default="true"/>
+    <xacro:property name="gpu" value="$(arg gpu)" />
+    <xacro:arg name="organize_cloud" default="false"/>
+    <xacro:property name="organize_cloud" value="$(arg organize_cloud)" />
+    <xacro:include filename="$(find velodyne_description)/urdf/VLP-16.urdf.xacro"/>
+    <xacro:VLP-16 parent="base_link" name="velodyne" topic="points_raw" organize_cloud="${organize_cloud}" hz="10" samples="440" gpu="${gpu}" lasers="${lasers_horizon}">
+        <origin xyz="0.1 0 0.50415" rpy="0 0 0" />
+    </xacro:VLP-16> 
+
+
+    <!-- IMU sensor -->
+    <joint name="imu_joint1" type="fixed">
+        <parent link="base_link"/>
+        <child link="imu_link1"/>
+        <origin xyz="-0.1 0 0.53355" rpy="0 0 0"/>
+    </joint>
+    <link name="imu_link1">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.1 0.1 0.05"/>
+            </geometry>
+        </collision>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.1 0.1 0.05"/>
+            </geometry>
+            <material name="yellow">
+                <color rgba="0.5 0.3 0.0 0.5" />
+            </material>
+        </visual>
+    </link>
+    <gazebo reference="imu_link1">
+        <gravity>true</gravity>
+        <material>Gazebo/Yellow</material>
+        <sensor name="imu_sensor1" type="imu">
+            <always_on>true</always_on>
+            <update_rate>200.0</update_rate>
+            <visualize>true</visualize>
+            <topic>__default_topic__</topic>
+            <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
+                <topicName>/$(arg robot_name)/imu</topicName>
+                <frameName>imu_link1</frameName>
+                <updateRateHZ>200.0</updateRateHZ>
+                <gaussianNoise>0.0</gaussianNoise>
+                <xyzOffset>0 0 0</xyzOffset>
+                <rpyOffset>0 0 0</rpyOffset>
+            </plugin>
+            <pose>0 0 0 0 0 0</pose>
+        </sensor>
+    </gazebo>
+
+    <!--Camera1 sensor-->
+    <joint name="camera1_joint" type="fixed">
+        <origin xyz="0.2 0 0.51555" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="camera1_link"/>
+    </joint>
+    <link name="camera1_link">
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.02 0.02 0.02"/>
+            </geometry>
+        </collision>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <box size="0.01 0.02 0.02"/>
+            </geometry>
+
+            <material name="blue">
+                <color rgba="0.0 0.0 1.0 1.0"/>
+            </material>
+        </visual>
+    </link>
+    <gazebo reference="camera1_link">
+        <material>Gazebo/Blue</material>
+        <sensor type="camera" name="camera1">
+            <update_rate>30.0</update_rate>
+            <camera name="head">
+                <horizontal_fov>1.74532925</horizontal_fov>
+                <image>
+                    <width>800</width>
+                    <height>800</height>
+                    <format>R8G8B8</format>
+                </image>
+                <clip>
+                    <near>0.02</near>
+                    <far>300</far>
+                </clip>
+                <noise>
+                    <type>gaussian</type>
+                    <!-- Noise is sampled independently per pixel on each frame.
+               That pixel's noise value is added to each of its color
+               channels, which at that point lie in the range [0,1]. -->
+                    <mean>0.0</mean>
+                    <stddev>0.007</stddev>
+                </noise>
+            </camera>
+            <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+                <alwaysOn>true</alwaysOn>
+                <updateRate>0.0</updateRate>
+                <cameraName>airport_robot/camera1</cameraName>
+                <imageTopicName>image_raw</imageTopicName>
+                <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+                <frameName>${robot_name}/camera1_link</frameName>
+                <hackBaseline>0.07</hackBaseline>
+                <distortionK1>0.0</distortionK1>
+                <distortionK2>0.0</distortionK2>
+                <distortionK3>0.0</distortionK3>
+                <distortionT1>0.0</distortionT1>
+                <distortionT2>0.0</distortionT2>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+
+    <joint name="join_left_front" type="fixed">
+        <!--<origin xyz="0.6 0 0.8" rpy="0 0 0"/>-->
+        <origin xyz="0.1825 0.195 0.049" rpy="0 0 1.57"/>
+        <parent link="base_link"/>
+        <child link="link_left_front"/>
+        <axis xyz="1 0 0" />
+        <limit effort="30" velocity="17.4" />
+    </joint>
+
+    <link name="link_left_front">
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+            <mass value="0.59"/>
+            <!--<origin xyz="0 0 0" rpy="0 0 0"/>-->
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <inertia ixx="0.002525266" ixy="0" ixz="0" iyy="0.001311197" iyz="0" izz="0.001311136"/>
+        </inertial>
+
+        <collision>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_right_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_right_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <material name="wheels">
+                <color rgba="0.6 0.6 0.6 1" />
+            </material>
+        </visual>
+    </link>
+
+    <joint name="join_right_front" type="fixed">
+        <!--<origin xyz="0.6 0 0.8" rpy="0 0 0"/>-->
+        <origin xyz="0.1825 -0.195 0.049" rpy="0 0 1.57"/>
+        <parent link="base_link"/>
+        <child link="link_right_front"/>
+        <axis xyz="1 0 0" />
+        <limit effort="30" velocity="17.4" />
+    </joint>
+
+    <link name="link_right_front">
+        <pose>0 0 0 0 0 0</pose>
+        <inertial>
+            <mass value="0.59"/>
+            <!--<origin xyz="0 0 0" rpy="0 0 0"/>-->
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <inertia ixx="0.002525266" ixy="0" ixz="0" iyy="0.001311197" iyz="0" izz="0.001311136"/>
+        </inertial>
+
+        <collision>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_left_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_left_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <material name="wheels">
+                <color rgba="0.6 0.6 0.6 1" />
+            </material>
+        </visual>
+    </link>
+
+    <joint name="join_left_back" type="fixed">
+        <!--<origin xyz="0.6 0 0.8" rpy="0 0 0"/>-->
+        <origin xyz="-0.1825 0.195 0.049" rpy="0 0 1.57"/>
+        <parent link="base_link"/>
+        <child link="link_left_back"/>
+        <axis xyz="1 0 0" />
+        <limit effort="30" velocity="17.4" />
+    </joint>
+
+    <link name="link_left_back">
+        <pose>0 0 0 0 0 0</pose>
+
+        <inertial>
+            <mass value="0.59"/>
+            <!--<origin xyz="0 0 0" rpy="0 0 0"/>-->
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <inertia ixx="0.002525266" ixy="0" ixz="0" iyy="0.001311197" iyz="0" izz="0.001311136"/>
+        </inertial>
+
+
+        <collision>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_left_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_left_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <material name="wheels">
+                <color rgba="0.6 0.6 0.6 1" />
+            </material>
+        </visual>
+    </link>
+
+    <joint name="join_right_back" type="fixed">
+        <!--<origin xyz="0.6 0 0.8" rpy="0 0 0"/>-->
+        <origin xyz="-0.1825 -0.195 0.049" rpy="0 0 1.57"/>
+        <parent link="base_link"/>
+        <child link="link_right_back"/>
+        <axis xyz="1 0 0" />
+        <limit effort="30" velocity="17.4" />
+    </joint>
+
+    <link name="link_right_back">
+        <pose>0 0 0 0 0 0</pose>
+
+        <inertial>
+            <mass value="0.59"/>
+            <!--<origin xyz="0 0 0" rpy="0 0 0"/>-->
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <inertia ixx="0.002525266" ixy="0" ixz="0" iyy="0.001311197" iyz="0" izz="0.001311136"/>
+        </inertial>
+
+
+        <collision>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_right_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+
+        <visual>
+            <origin xyz="0 0 -0.07625" rpy="0 0 -1.57"/>
+            <geometry>
+                <mesh filename="package://airplane_formation_control/meshes/mecanum_right_hands.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <material name="wheels">
+                <color rgba="0.6 0.6 0.6 1" />
+            </material>
+        </visual>
+    </link>
+
+    
+
+    <gazebo reference="base_footprint">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="base_link">
+        <material>Gazebo/Black</material>
+    </gazebo>
+
+    <gazebo reference="link_left_front">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+        <maxVel>1.0</maxVel>
+    </gazebo>
+
+    <gazebo reference="link_left_back">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+        <maxVel>1.0</maxVel>
+    </gazebo>
+
+    <gazebo reference="link_right_front">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+        <maxVel>1.0</maxVel>
+    </gazebo>
+
+    <gazebo reference="link_right_back">
+        <mu1>10000000</mu1>
+        <mu2>10000000</mu2>
+        <kp>10000000.0</kp>
+        <kd>1.0</kd>
+        <minDepth>0.001</minDepth>
+        <maxVel>1.0</maxVel>
+    </gazebo>
+
+    <gazebo>
+        <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+            <robotNamespace>/${robot_name}/airport_robot</robotNamespace>
+            <robotParam>robot_description</robotParam>
+            <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+            <publishWheelTF>false</publishWheelTF>
+            <publishWheelJointState>false</publishWheelJointState>
+            <updateRate>1.0</updateRate>
+            <publish_tf>false</publish_tf>
+        </plugin>
+    </gazebo>
+    <gazebo>
+        <plugin name="mecanum_controller" filename="libgazebo_ros_planar_move.so">
+            <robotNamespace>/${robot_name}/airport_robot</robotNamespace>
+            <commandTopic>cmd_vel</commandTopic>
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>${robot_name}/odom</odometryFrame>
+            <leftFrontJoint>join_left_front</leftFrontJoint>
+            <rightFrontJoint>join_right_front</rightFrontJoint>
+            <leftRearJoint>join_left_back</leftRearJoint>
+            <rightRearJoint>join_right_back</rightRearJoint>
+            <odometryRate>60.0</odometryRate>
+            <robotBaseFrame>${robot_name}/base_footprint</robotBaseFrame>
+            <cmdTimeout>0.5</cmdTimeout>
+            <publishWheelTF>false</publishWheelTF>
+            <publishWheelJointState>false</publishWheelJointState>
+            <updateRate>10</updateRate>
+            <publishWheelTF>false</publishWheelTF>
+            <publishWheelJointState>false</publishWheelJointState>
+            <updateRate>1.0</updateRate>
+            <publish_tf>false</publish_tf>
+        </plugin>
+    </gazebo>
+
+</robot>

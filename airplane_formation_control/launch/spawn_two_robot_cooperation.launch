@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+	<arg name="x" default="0.0"/>
+	<arg name="y" default="0.0"/>
+	<arg name="z" default="0.0"/>
+	<arg name="robot_type" default="tracked"/>
+	<arg name="robot_name" default="airport_robot"/>
+	<arg name="gpu" default="true"/>
+	<arg name="organize_cloud" default="false"/>
+	<arg name="angle" default="0"/>
+	
+	<!-- Load the urdf into the parameter server. -->
+
+	<node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" args="_publish_frequency:= 50" ns="/$(arg robot_name)">
+		<param name="tf_prefix" value="$(arg robot_name)" />
+	</node>
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" ns="/$(arg robot_name)">
+	</node>
+
+
+	<!-- <arg name="urdf_robot_file" default="$(find airplane_formation_control)/urdf/base_car.urdf.xacro"/> -->
+	<arg name="urdf_robot_file" default="$(find airplane_formation_control)/urdf/c919_robot_mecanum.xacro"/>
+	<param name="robot_description" command="$(find xacro)/xacro '$(arg urdf_robot_file)' robot_name:='$(arg robot_name)' organize_cloud:=$(arg organize_cloud) gpu:=$(arg gpu) lasers_horizon:=32 lasers_vertical:=32" />
+	
+
+	<node name="spawn_model_c919" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen" args="-urdf -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg angle) -model $(arg robot_name) -param robot_description">
+	
+	</node>
+</launch>

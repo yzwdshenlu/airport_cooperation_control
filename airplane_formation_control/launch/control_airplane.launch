@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<launch>
+
+  <arg name="airplane_type" default="tracked"/>
+  <arg name="airplane_name" default="airplane"/>
+
+  <!-- Load joint controller configurations from YAML file to parameter server -->
+  <rosparam file="$(find airplane_formation_control)/config/control_config_$(arg airplane_type).yaml" command="load"  ns="/$(arg airplane_name)"/>
+
+  <!-- load controllers -->
+  <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  ns="/$(arg airplane_name)/airport_robot"
+  args="joint_state_controller 
+  rear_right_velocity_controller 
+  rear_left_velocity_controller 
+  front_right_velocity_controller 
+  front_left_velocity_controller"/>
+
+  <!-- hhhhhhhhhhh -->
+  <node name="cmdvel2gazebo_c919" pkg="airplane_formation_control" type="cmdvel2gazebo_airplane.py" respawn="true" output="screen"> 
+      <param name="topic_name" value="$(arg airplane_name)/airport_robot" />
+  </node>
+
+
+</launch>
+
+
