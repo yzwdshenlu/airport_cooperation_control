@@ -152,9 +152,7 @@ add_executable(robot_mecanum_control_test src/robot_mecanum_control_test.cpp)
 add_executable(filt_ground_pointcloud src/filt_ground_pointcloud.cpp)
 add_executable(airplane_icp src/airplane_icp.cpp)
 add_executable(build_map src/build_map.cpp)
-add_executable(astar_planning src/astar_planning.cpp)
 add_executable(pointcloud_process_height src/pointcloud_process_height.cpp)
-add_executable(atest src/atest.cpp)
 add_executable(build_map_test src/build_map_test.cpp)
 add_executable(navigation_client src/navigation_client.cpp)
 
@@ -178,9 +176,7 @@ add_dependencies(robot_mecanum_control_test ${${PROJECT_NAME}_EXPORTED_TARGETS} 
 add_dependencies(filt_ground_pointcloud ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(airplane_icp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(build_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(astar_planning ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(pointcloud_process_height ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(atest ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(build_map_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(navigation_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
@@ -231,15 +227,7 @@ target_link_libraries(build_map
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
-target_link_libraries(astar_planning
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-)
 target_link_libraries(pointcloud_process_height
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-)
-target_link_libraries(atest
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )

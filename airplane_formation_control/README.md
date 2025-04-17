@@ -3,7 +3,7 @@
 ## 环境
 
 1. Ubuntu 20.04
-2. Ros neotic
+2. Ros noetic
 3. Gazebo 9.0
 
 
@@ -22,6 +22,8 @@
 
 旋转激光雷达：
 `roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=true pointcloud_topic:=/robot0/points_raw imu_topic:=/robot0/imu robot_namespace:=robot0`
+
+`roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=true pointcloud_topic:=/robot1/points_raw imu_topic:=/robot1/imu robot_namespace:=robot1`
 
 `roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=true pointcloud_topic:=/robot1/points_raw imu_topic:=/robot1/processed_imu`
 

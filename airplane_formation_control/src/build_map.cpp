@@ -44,7 +44,7 @@ int main(int argc, char** argv)
 
    std::cout << "输入点云点数：" << pcd_cloud->points.size() << std::endl;
   
-   TransformPointCloudToWorld(pcd_cloud, -42, -100, 0, 0.0, 0.0, 0.0);
+   TransformPointCloudToWorld(pcd_cloud, -42, -94, 0.0, 0.0, 0.0, 0.0);
    SetMapTopicMsg(pcd_cloud, map_topic_msg);
 
    while(ros::ok())

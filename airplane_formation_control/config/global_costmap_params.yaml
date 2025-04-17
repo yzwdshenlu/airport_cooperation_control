@@ -9,12 +9,7 @@ global_costmap:
     plugins:
     - {name: static_layer, type: "costmap_2d::StaticLayer"}
     - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+    - {name: obstacle_layer,  type: "costmap_2d::ObstacleLayer"}
 
 
-    static_layer:
-        enabled: true
-        map_topic: /map                  # 确保与地图服务器的话题一致
-    inflation_layer:
-        enabled: true
-        cost_scaling_factor: 3.0
-        inflation_radius: 0.8
+    

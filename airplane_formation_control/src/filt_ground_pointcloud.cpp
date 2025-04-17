@@ -7,10 +7,10 @@
    
 int main() {
     // 指定输入和输出点云文件的路径
-    // const std::string input_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_obscale.pcd";  // 输入文件路径
-    // const std::string output_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_without_ground.pcd"; // 输出文件路径
-    const std::string input_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_dlio_map_obscale.pcd";  // 输入文件路径
-    const std::string output_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_dlio_map_without_ground.pcd"; // 输出文件路径
+    const std::string input_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_obscale.pcd";  // 输入文件路径
+    const std::string output_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_without_ground.pcd"; // 输出文件路径
+    // const std::string input_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_dlio_map_obscale.pcd";  // 输入文件路径
+    // const std::string output_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_dlio_map_without_ground.pcd"; // 输出文件路径
 
     // 创建点云指针
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
@@ -29,8 +29,8 @@ int main() {
     pass.setFilterFieldName("z");
 
     // 设置滤波范围
-    // pass.setFilterLimits(-0.5, 100.0);  // robot0
-    pass.setFilterLimits(-0.5, 100.0);  // robot1
+    // pass.setFilterLimits(-0.05, 100.0);  // robot0
+    pass.setFilterLimits(-0.05, 100.0);  // robot1
     pass.filter(*cloud_filtered);
 
     std::cout << "Filtered point cloud has " << cloud_filtered->points.size() << " points." << std::endl;

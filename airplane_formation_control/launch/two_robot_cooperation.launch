@@ -21,11 +21,10 @@
   </include>
 
   <!-- 启动rqt运动控制插件 -->
-  <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" respawn="false" output="screen" > 
-  </node>
+  <!-- <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering" respawn="false" output="screen" > 
+  </node> -->
 
-    <!-- <node pkg="rqt_robot_steering" type="rqt_robot_steering" name="rqt_robot_steering2" respawn="false" output="screen" >  -->
-  <!-- </node> -->
+
 
 
   <!-- 飞机 -->
@@ -50,10 +49,13 @@
   <!-- 小车1 -->
   <group ns ="$(arg ns0)">
     <include file="$(find airplane_formation_control)/launch/spawn_two_robot_cooperation.launch">
-      <arg name="x" value="-42.0"/>
-      <!-- <arg name="y" value="-94.0"/>  -->
+      <!-- -42 -100 0.5为测试建图时的坐标，-42 -94 0.5为协同控制时的坐标 -->
+      <!-- <arg name="x" value="-42.0"/>
       <arg name="y" value="-100.0"/> 
-      <arg name="z" value="0.0"/>
+      <arg name="z" value="0.5"/> -->
+      <arg name="x" value="-42.0"/>
+      <arg name="y" value="-94.0"/> 
+      <arg name="z" value="0.5"/>
       <arg name="robot_type" value="$(arg robot_type)"/>
       <arg name="robot_name" value="$(arg ns0)"/>
     </include>
@@ -65,9 +67,9 @@
 
 
     <!-- 设置一个全局坐标系map，这是rviz中显示多机器人的关键，将map坐标系作为机器人的odom坐标系的父亲，使得三个机器人能正常在rviz中显示 -->
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-42 -94 0 0 0 0 /map /robot0/odom" /> -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-42 -100 0 0 0 0 /map /robot0/odom" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="robot0_front" args="$(arg front_distance) 0 0 0 0 0 /robot0/base_link /robot0/front" />
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-42 -94 0 0 0 0 /map /robot0/odom" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-42 -100 0 0 0 0 /map /robot0/odom" /> -->
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="robot0_front" args="$(arg front_distance) 0 0 0 0 0 /robot0/base_link /robot0/front" /> -->
   </group>
 
 
@@ -76,11 +78,9 @@
   <!-- 小车2 -->
   <group ns ="$(arg ns1)">
     <include file="$(find airplane_formation_control)/launch/spawn_two_robot_cooperation.launch">
-    <!-- <arg name="x" value="-39.0"/> -->
     <arg name="x" value="-42.0"/>
     <arg name="y" value="-94.0"/>
-    <arg name="z" value="7.3"/>
-    <!-- <arg name="angle" value="1.57"/> -->
+    <arg name="z" value="4.5"/>
     <arg name="robot_type" value="$(arg robot_type)"/>
     <arg name="robot_name" value="$(arg ns1)"/>
     </include>
@@ -90,9 +90,9 @@
       <arg name="robot_name" value="$(arg ns1)"/>
     </include> -->
 
-    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-39 -94 4.3 1.57 0 0 /map /robot1/odom" /> -->
-    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-42 -94 4.3 0 0 0 /map /robot1/odom" />
-    <node pkg="tf2_ros" type="static_transform_publisher" name="robot1_front" args="$(arg front_distance) 0 0 0 0 0 /robot1/base_link /robot1/front" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-39 -94 4.5 1.57 0 0 /map /robot1/odom" /> -->
+    <node pkg="tf2_ros" type="static_transform_publisher" name="static_transform_publisher1" args="-42 -94 4.5 0 0 0 /map /robot1/odom" />
+    <!-- <node pkg="tf2_ros" type="static_transform_publisher" name="robot1_front" args="$(arg front_distance) 0 0 0 0 0 /robot1/base_link /robot1/front" /> -->
   </group>
 
 
