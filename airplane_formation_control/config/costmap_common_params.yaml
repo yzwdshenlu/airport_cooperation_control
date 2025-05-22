@@ -6,7 +6,7 @@ raytrace_range: 10.0
 
 static_layer:
     enabled: true
-    map_topic: /map                  # 确保与地图服务器的话题一致
+    map_topic: /robot0/map                  # 确保与地图服务器的话题一致
 inflation_layer:
     enabled: true
     cost_scaling_factor: 3.0

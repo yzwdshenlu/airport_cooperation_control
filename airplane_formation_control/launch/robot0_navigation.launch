@@ -1,8 +1,8 @@
 <launch>
-  <arg name="cmd_vel_topic" default="/robot0/cmd_vel" />
-  <arg name="odom_topic" default="/robot0/odom" />
+  <arg name="cmd_vel_topic" default="/robot1/cmd_vel" />
+  <arg name="odom_topic" default="/robot1/odom" />
 
-  <node name="map_server" pkg="map_server" type="map_server" args="$(find airplane_formation_control)/map/mymap.yaml"/>
+  <!-- <node name="map_server" pkg="map_server" type="map_server" args="$(find airplane_formation_control)/map/mymap.yaml"/> -->
   
   <node pkg="move_base" type="move_base" respawn="false" name="move_base"  output="screen">
     <rosparam file="$(find airplane_formation_control)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />

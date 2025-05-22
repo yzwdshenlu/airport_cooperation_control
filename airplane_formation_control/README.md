@@ -27,7 +27,7 @@
 
 `roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=true pointcloud_topic:=/robot1/points_raw imu_topic:=/robot1/processed_imu`
 
-`roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=true pointcloud_topic:=/robot2/points_raw imu_topic:=/robot2/processed_imu`
+`roslaunch direct_lidar_inertial_odometry dlio.launch rviz:=true pointcloud_topic:=/robot0/points_raw imu_topic:=/robot0/processed_imu`
 
 
 双激光雷达：

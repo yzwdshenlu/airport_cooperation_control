@@ -20,7 +20,8 @@ void pointCloudCallback(const sensor_msgs::PointCloud2ConstPtr& cloud_msg) {
     std::lock_guard<std::mutex> lock(cloud_mutex);
     pcl::fromROSMsg(*cloud_msg, cloud);
     cloud_received = true;
-    pcl::io::savePCDFileASCII("/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_pointcloud.pcd", cloud);
+    pcl::io::savePCDFileASCII("/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_dlio_map_obscale.pcd", cloud);
+    // pcl::io::savePCDFileASCII("/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_obscale.pcd", cloud);
     ROS_INFO("PointCloud saved to file.");   
 }
    
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
 
     ros::Subscriber sub = nh.subscribe("/robot1/points_raw", 1, pointCloudCallback);
 
-    ros::spin();
+    ros::spinOnce();
 
     return 0;   
 }

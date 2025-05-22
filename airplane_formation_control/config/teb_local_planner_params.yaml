@@ -1,12 +1,12 @@
 TebLocalPlannerROS:
- odom_topic: robot0/odom
+ odom_topic: dlio/odom_node/odom
  map_frame: map
 
  # 策略相关
  teb_autosize: True  # 是否允许改变轨迹的时域长度，也就是改变 dt_ref
  dt_ref: 0.3         # 路径上的两个相邻姿态的默认距离
  dt_hysteresis: 0.1  # 允许改变的时域解析度的浮动范围
- global_plan_overwrite_orientation: True # 是否修正全局路径中的临时局部路径点的朝向
+ global_plan_overwrite_orientation: True # 是否覆盖全局路径中的临时局部路径点的朝向
  max_global_plan_lookahead_dist: 2.0     # 最大向前看距离
  feasibility_check_no_poses: 2           #在判断生成的轨迹是否冲突时使用，此时设置为2，即从轨迹起点开始逐个检查轨迹上的2个点，若2个点均不发生碰撞，则认为本次轨迹有效。
     
@@ -43,8 +43,8 @@ TebLocalPlannerROS:
    vertices: [ [0.6, 0.3], [0.6, -0.3], [-0.6, -0.3], [-0.6, 0.3] ] 
 
  # 到达目标点的判断容差   
- xy_goal_tolerance: 0.2
- yaw_goal_tolerance: 0.1
+ xy_goal_tolerance: 0.25
+ yaw_goal_tolerance: 0.2
  free_goal_vel: False # 是否允许在到达目标点时继续移动
     
  # 障碍物相关 
@@ -76,8 +76,14 @@ TebLocalPlannerROS:
  enable_multithreading: True          # 多线程计算
  max_number_classes: 2                # 规划的路径线数上限
  selection_cost_hysteresis: 1.0       # 路径轨迹入选的评价上限
- selection_obst_cost_scale: 1.0       # 障碍物评价在入选标准中的缩放倍率
+ selection_obst_cost_scale: 1.0       # 障碍物评价在入选标准中的缩放倍率，可增加避障的权重
  selection_alternative_time_cost: False # 时间成本是否要进行平方计算
  roadmap_graph_no_samples: 15         # 为创建 roadmap graph 而生成的样本数
  roadmap_graph_area_width: 5          # 关键点采样的宽度，单位为米。
+
+ # 协同控制相关
+ cooperation_enable: False # 是否启用协同控制
+ cooperation_dist_weight: 1
+ cooperation_dist_yaw: 1
+
  

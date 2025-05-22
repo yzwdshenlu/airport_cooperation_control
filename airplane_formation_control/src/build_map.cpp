@@ -5,10 +5,13 @@
 #include <pcl/io/pcd_io.h>   
 #include <pcl_conversions/pcl_conversions.h>   
 #include <pcl/point_types.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2_eigen/tf2_eigen.h>
+#include <pcl/common/transforms.h>
 
 /* DLIO生成的点云地图经过预处理之后，将这个点云地图转二维栅格地图 */
-std::string pcd_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_without_ground.pcd"; 
-   
+std::string pcd_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot1_dlio_map_without_ground.pcd"; 
+// std::string pcd_file = "/home/shenlu/airplane_ws/src/airplane_formation_control/pointcloud/robot0_dlio_map_without_ground.pcd"; 
 std::string map_topic_name = "map";   
  
 nav_msgs::OccupancyGrid map_topic_msg;   
@@ -19,51 +22,69 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_after_Radius(new pcl::PointCloud<pcl::
 pcl::PointCloud<pcl::PointXYZ>::Ptr pcd_cloud(new pcl::PointCloud<pcl::PointXYZ>);
    
 void SetMapTopicMsg(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, nav_msgs::OccupancyGrid& msg);
-void TransformPointCloudToWorld(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, 
-                                double tx, double ty, double tz, 
-                                double roll, double pitch, double yaw);
+bool TransformPointCloudToWorldWithTF(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                                      const std::string& source_frame,
+                                      const std::string& target_frame,
+                                      tf2_ros::Buffer& tf_buffer);
 
 
    
-int main(int argc, char** argv)   
+int main(int argc, char** argv)
 {
-   ros::init(argc, argv, "pcl_filters");
-   ros::NodeHandle nh;
+    ros::init(argc, argv, "pcl_filters");
+    ros::NodeHandle nh;
 
+    ros::Publisher map_topic_pub = nh.advertise<nav_msgs::OccupancyGrid>(map_topic_name, 1);
 
-   ros::Rate loop_rate(1.0);
+    // 加载 PCD 文件
+    if (pcl::io::loadPCDFile<pcl::PointXYZ>(pcd_file, *pcd_cloud) == -1)
+    {
+        PCL_ERROR("Couldn't read file: %s \n", pcd_file.c_str());
+        return -1;
+    }
 
+    std::cout << "输入点云点数：" << pcd_cloud->points.size() << std::endl;
 
-   ros::Publisher map_topic_pub = nh.advertise<nav_msgs::OccupancyGrid>(map_topic_name, 1);
+    // TF监听器
+    tf2_ros::Buffer tf_buffer;
+    tf2_ros::TransformListener tf_listener(tf_buffer);
 
-   if (pcl::io::loadPCDFile<pcl::PointXYZ> (pcd_file, *pcd_cloud) == -1)
-   {
-     PCL_ERROR ("Couldn't read file: %s \n", pcd_file.c_str());
-     return (-1);
-   }
+    ros::Rate rate(1.0);
+    bool transformed = false;
 
-   std::cout << "输入点云点数：" << pcd_cloud->points.size() << std::endl;
-  
-   TransformPointCloudToWorld(pcd_cloud, -42, -94, 0.0, 0.0, 0.0, 0.0);
-   SetMapTopicMsg(pcd_cloud, map_topic_msg);
+    while (ros::ok() && !transformed)
+    {
+        // 尝试获取变换并转换点云
+        transformed = TransformPointCloudToWorldWithTF(pcd_cloud, "robot1/velodyne_base_link", "robot1/base_link", tf_buffer);
+        if (!transformed)
+        {
+            ROS_WARN("wait for TF...");
+            ros::spinOnce();
+            rate.sleep();
+            continue;
+        }
 
-   while(ros::ok())
-   {
-     map_topic_pub.publish(map_topic_msg);
+        // 成功转换后，生成地图消息
+        SetMapTopicMsg(pcd_cloud, map_topic_msg);
+        break;
+    }
 
-     loop_rate.sleep();
+    while (ros::ok())
+    {
+        map_topic_pub.publish(map_topic_msg);
+        ros::spinOnce();
+        rate.sleep();
+    }
 
-     ros::spinOnce();
-   }
-
-   return 0;   
+    return 0;
 }
    
 void SetMapTopicMsg(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, nav_msgs::OccupancyGrid& msg)   
 {
    msg.header.seq = 0;
    msg.header.stamp = ros::Time::now();  // 设置时间戳
-   msg.header.frame_id = "map"; // 设置坐标系
+  //  msg.header.frame_id = "map"; // 设置坐标系
+   msg.header.frame_id = "robot1/base_link"; // 设置坐标系
   
    msg.info.map_load_time = ros::Time::now();
    msg.info.resolution = map_resolution;
@@ -113,7 +134,7 @@ void SetMapTopicMsg(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, nav_msgs::O
 
 
    // 设置 z 阈值（例如：z_threshold）
-   double z_threshold = 0.5;  // 可以根据实际需求设置该阈值
+   double z_threshold = 10.5;  // 可以根据实际需求设置该阈值
 
    // 遍历点云，设置栅格占据信息
    for(int iter = 0; iter < cloud->points.size(); iter++)
@@ -136,24 +157,30 @@ void SetMapTopicMsg(const pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, nav_msgs::O
    }   
 }
 
-// 将点云转换到世界坐标系(输入参数为机器人相对于世界坐标系的位姿)
-void TransformPointCloudToWorld(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, 
-                                double dx, double dy, double dz, 
-                                double roll, double pitch, double yaw)
+// 将点云转换到世界坐标系(输入参数为机器人相对于目标坐标系的位姿)
+bool TransformPointCloudToWorldWithTF(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+                                      const std::string& source_frame,
+                                      const std::string& target_frame,
+                                      tf2_ros::Buffer& tf_buffer)
 {
-    Eigen::Matrix3d rotation_matrix;
-    rotation_matrix = Eigen::AngleAxisd(roll, Eigen::Vector3d::UnitX())
-                    * Eigen::AngleAxisd(pitch, Eigen::Vector3d::UnitY())
-                    * Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ());
-
-
-    Eigen::Vector3d translation_vector(dx, dy, dz);
-    for (size_t i = 0; i < cloud->points.size(); ++i)
+    geometry_msgs::TransformStamped transformStamped;
+    try
     {
-        Eigen::Vector3d point(cloud->points[i].x, cloud->points[i].y, cloud->points[i].z);
-        Eigen::Vector3d transformed_point = rotation_matrix * point + translation_vector;
-        cloud->points[i].x = transformed_point.x();
-        cloud->points[i].y = transformed_point.y();
-        cloud->points[i].z = transformed_point.z();
+        transformStamped = tf_buffer.lookupTransform(target_frame, source_frame, ros::Time(0), ros::Duration(3.0));
     }
+    catch (tf2::TransformException &ex)
+    {
+        ROS_WARN("TF transform failed: %s", ex.what());
+        return false;
+    }
+
+    // 转换为 Eigen 格式
+    Eigen::Affine3d transform = tf2::transformToEigen(transformStamped.transform);
+    // 输出旋转和平移
+    Eigen::Matrix3d rotation = transform.rotation();
+    Eigen::Vector3d translation = transform.translation();
+    std::cout << "Rotation: \n" << rotation << std::endl;
+    std::cout << "Translation: \n" << translation << std::endl;
+    pcl::transformPointCloud(*cloud, *cloud, transform);
+    return true;
 }

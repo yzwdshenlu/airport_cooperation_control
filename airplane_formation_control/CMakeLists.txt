@@ -155,6 +155,7 @@ add_executable(build_map src/build_map.cpp)
 add_executable(pointcloud_process_height src/pointcloud_process_height.cpp)
 add_executable(build_map_test src/build_map_test.cpp)
 add_executable(navigation_client src/navigation_client.cpp)
+add_executable(pcd_publisher src/pcd_publisher.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -179,6 +180,7 @@ add_dependencies(build_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED
 add_dependencies(pointcloud_process_height ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(build_map_test ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(navigation_client ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(pcd_publisher ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
@@ -236,6 +238,10 @@ target_link_libraries(build_map_test
   ${PCL_LIBRARIES}
 )
 target_link_libraries(navigation_client
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
+target_link_libraries(pcd_publisher
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
 )
